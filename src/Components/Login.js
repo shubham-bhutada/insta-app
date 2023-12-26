@@ -1,12 +1,24 @@
-import React, { useState } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import axios from "axios";
+import UserContext from "../Context/UserContext";
+import { useNavigate } from "react-router-dom";
 
-const Login = ({setToken}) => {
+
+const Login = () => {
+  
   const [user, setUser] = useState({
     email: "",
     password: "",
   });
   const [message, setMessage] = useState("");
+  const {setToken} = useContext(UserContext)
+  const navigate = useNavigate();
+
+  useEffect(()=>{
+    if(localStorage.getItem("token") != undefined) {
+      navigate("/dashboard")
+    }
+  },[])
 
   function userUpdate(e) {
     setUser({ ...user, [e.target.name]: e.target.value });
@@ -18,7 +30,6 @@ const Login = ({setToken}) => {
         setMessage("Please fill all the input fields");
         return;
     }
-    console.log("hi");
     try {
       const response = await axios.post(
         "https://instagram-express-app.vercel.app/api/auth/login",
@@ -29,16 +40,16 @@ const Login = ({setToken}) => {
       );
       console.log(response.data.message);
       setMessage(response.data.message);
-      setUser({email: "", password: ""})
       setToken(response.data.data.token)
-      console.log(response.data.data.token);
-      console.log("hi in try");
+      localStorage.setItem("token", JSON.stringify(response.data.data.token))
+      setUser({email: "", password: ""})
+      alert("Login successful")
+      navigate("/dashboard")
+      // console.log(response.data.data.token);
     } catch (error) {
       console.log(error.response.data.message);
       setMessage(error.response.data.message);
-      console.log("hi in catch");
     }
-    console.log("hello");
   }
 
   return (

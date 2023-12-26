@@ -1,7 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import axios from "axios";
+import UserContext from "../Context/UserContext";
+import { useNavigate } from "react-router-dom";
 
-const Signup = ({setToken}) => {
+const Signup = () => {
+  const {setToken} = useContext(UserContext)
+  const navigate = useNavigate();
+
   const [user, setUser] = useState({
     name: "",
     email: "",
@@ -9,6 +14,12 @@ const Signup = ({setToken}) => {
     confirmPassword: "",
   });
   const [message, setMessage] = useState("");
+
+  useEffect(()=>{
+    if(localStorage.getItem("token") != undefined) {
+      navigate("/dashboard")
+    }
+  },[])
 
   function userUpdate(e) {
     setUser({ ...user, [e.target.name]: e.target.value });
@@ -35,8 +46,11 @@ const Signup = ({setToken}) => {
       );
       console.log(response.data.message);
       setMessage(response.data.message);
-      setUser({name: "",email: "", password: "", confirmPassword: ""})
       setToken(response.data.data.token)
+      localStorage.setItem("token", JSON.stringify(response.data.data.token))
+      setUser({name: "",email: "", password: "", confirmPassword: ""})
+      setTimeout(() => navigate("/dashboard")
+      , 2000);
     } catch (error) {
       console.log(error.response.data.message);
       setMessage(error.response.data.message);
